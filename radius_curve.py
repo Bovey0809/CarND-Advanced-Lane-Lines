@@ -27,7 +27,9 @@ def generate_data(ym_per_pix, xm_per_pix):
     # Fit a second order polynomial to pixel positions in each fake lane line
     ##### TO-DO: Fit new polynomials to x,y in world space #####
     ##### Utilize `ym_per_pix` & `xm_per_pix` here #####
-    
+    leftx *= xm_per_pix
+    rightx *= xm_per_pix
+    ploty *= ym_per_pix
     left_fit_cr = np.polyfit(ploty, leftx, 2)
     right_fit_cr = np.polyfit(ploty, rightx, 2)
 
@@ -51,8 +53,13 @@ def measure_curvature_real():
     y_eval = np.max(ploty)
 
     ##### TO-DO: Implement the calculation of R_curve (radius of curvature) #####
-    left_curverad = 0  ## Implement the calculation of the left line here
-    right_curverad = 0  ## Implement the calculation of the right line here
+    def radius(y_eval, fit):
+        A = fit[0]
+        B = fit[1]
+        return (1 + (2 * A * y_eval + B) ** 2) ** (3 / 2) / np.abs(2 * A)
+
+    left_curverad =  radius(y_eval, left_fit_cr)## Implement the calculation of the left line here
+    right_curverad = radius(y_eval, right_fit_cr)  ## Implement the calculation of the right line here
 
     return left_curverad, right_curverad
 
