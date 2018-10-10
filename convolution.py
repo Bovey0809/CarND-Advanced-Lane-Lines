@@ -17,7 +17,7 @@ margin = 50  # How much to slide left and right for searching
 def window_mask(width: int, height: int, img_ref: ndarray, center: float, level: int) -> ndarray:
     """
     Return the window mask depends on the width height, center, and level, make it white.
-
+    把一小块变成1.
     :rtype: ndarray
     """
     output = np.zeros_like(img_ref)
@@ -32,7 +32,6 @@ def window_mask(width: int, height: int, img_ref: ndarray, center: float, level:
 
 
 def find_window_centroids(image, window_width, window_height, margin):
-    # todo: what is the usage of margin?
     window_centroids = []  # 就是windon中心的坐标的列表。
     # Create our window template that we will use for convolutions
     window = np.ones(window_width)
@@ -43,11 +42,9 @@ def find_window_centroids(image, window_width, window_height, margin):
     # Sum quarter bottom of image to get slice, could use a different ratio
     l_sum = np.sum(image[int(3 * image.shape[0] / 4):,
                          :int(image.shape[1] / 2)], axis=0)
-    print(image[int(3 * image.shape[0] / 4):, :int(image.shape[1] / 2)].shape)
+
     # l_sum 得到的是在图片左下角按照竖排的所有像素值的加和。
-    print(np.convolve(window, l_sum).shape)
-    print('l_sum shape', l_sum.shape)
-    print(window.shape)
+
     l_center = np.argmax(np.convolve(window, l_sum)) - window_width / 2
     # 这里用的是full conv， 就是每个每个元素的被乘的次数一样, 输出的长度是N+M-1, 20+640-1
     r_sum = np.sum(image[int(3 * image.shape[0] / 4):,
@@ -65,11 +62,14 @@ def find_window_centroids(image, window_width, window_height, margin):
             image[int(image.shape[0] - (level + 1) * window_height):int(image.shape[0] - level * window_height), :],
             axis=0)
         # 横着对图片切一层, 加和。
+
         conv_signal = np.convolve(window, image_layer)
-        print(conv_signal.shape)
+
         # Find the best left centroid by using past left center as a reference
         # Use window_width/2 as offset because convolution signal reference is at right side of window, not center of window
         offset = window_width / 2
+
+        # TODO: what is the usage of offset?
         l_min_index = int(max(l_center + offset - margin, 0))
         l_max_index = int(min(l_center + offset + margin, image.shape[1]))
         l_center = np.argmax(
@@ -105,6 +105,8 @@ if len(window_centroids) > 0:
         r_mask = window_mask(window_width, window_height,
                              warped, window_centroids[level][1], level)
         # Add graphic points from window mask here to total pixels found
+
+        # 解释下面这个, 让所有mask里面的像素为255, 因为是
         l_points[(l_points == 255) | ((l_mask == 1))] = 255
         r_points[(r_points == 255) | ((r_mask == 1))] = 255
 
@@ -127,4 +129,4 @@ else:
 # Display the final results
 plt.imshow(output)
 plt.title('window fitting results')
-plt.show()
+plt.savefig('conv.jpg', dpi=300)
