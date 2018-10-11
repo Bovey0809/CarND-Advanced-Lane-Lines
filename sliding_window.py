@@ -1,6 +1,4 @@
 import numpy as np
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
 import cv2
@@ -25,7 +23,7 @@ def find_lane_pixels(binary_warped):
     # Choose the number of sliding windows
     nwindows = 9
     # Set the width of the windows +/- margin
-    margin = 100
+    margin = 50
     # Set minimum number of pixels found to recenter window
     minpix = 50
 
@@ -57,10 +55,10 @@ def find_lane_pixels(binary_warped):
         win_xright_high = rightx_current + margin
 
         # Draw the windows on the visualization image
-        cv2.rectangle(out_img, (win_xleft_low, win_y_low),
-                      (win_xleft_high, win_y_high), (0, 255, 0), 2)
-        cv2.rectangle(out_img, (win_xright_low, win_y_low),
-                      (win_xright_high, win_y_high), (0, 255, 0), 2)
+        # cv2.rectangle(out_img, (win_xleft_low, win_y_low),
+        #               (win_xleft_high, win_y_high), (0, 255, 0), 2)
+        # cv2.rectangle(out_img, (win_xright_low, win_y_low),
+        #               (win_xright_high, win_y_high), (0, 255, 0), 2)
 
         # TO-DO: Identify the nonzero pixels in x and y within the window #
         good_left_inds = ((nonzerox > win_xleft_low) & (nonzerox < win_xleft_high) & (
@@ -101,7 +99,6 @@ def find_lane_pixels(binary_warped):
 
 
 def fit_polynomial(binary_warped):
-    fig = plt.figure()
     # Find our lane pixels first
     leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped)
 
@@ -126,12 +123,11 @@ def fit_polynomial(binary_warped):
     out_img[righty, rightx] = [0, 0, 255]
 
     # Plots the left and right polynomials on the lane lines
-    plt.imshow(out_img)
-    plt.plot(left_fitx, ploty, color='yellow')
-    plt.plot(right_fitx, ploty, color='yellow')
+    # plt.plot(left_fitx, ploty, color='yellow')
+    # plt.plot(right_fitx, ploty, color='yellow')
 
-    return fig
+    return out_img, (left_fitx, ploty), (right_fitx, ploty)
 
 
-out_img = fit_polynomial(binary_warped)
-out_img.savefig('outimg1.jpg', bbox_inches='tight', dpi=100)
+# out_img = fit_polynomial(binary_warped)
+# out_img.savefig('outimg1.jpg', bbox_inches='tight', dpi=100)

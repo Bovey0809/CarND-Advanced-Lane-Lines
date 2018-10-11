@@ -115,6 +115,7 @@ if len(window_centroids) > 0:
     template = np.array(r_points + l_points, np.uint8)
     zero_channel = np.zeros_like(template)  # create a zero color channel
     # make window pixels green
+
     template = np.array(
         cv2.merge((zero_channel, template, zero_channel)), np.uint8)
     # making the original road pixels 3 color channels
