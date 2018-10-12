@@ -7,11 +7,11 @@ import cv2
 # Read in a thresholded image
 from numpy.core.multiarray import ndarray
 
-warped = mpimg.imread('warped_example.jpg')
-# window settings
-window_width = 50
-window_height = 50  # Break image into 9 vertical layers since image height is 720
-margin = 50  # How much to slide left and right for searching
+# warped = mpimg.imread('warped_example.jpg')
+# # window settings
+# window_width = 50
+# window_height = 50  # Break image into 9 vertical layers since image height is 720
+# margin = 50  # How much to slide left and right for searching
 
 
 def window_mask(width: int, height: int, img_ref: ndarray, center: float, level: int) -> ndarray:
@@ -85,49 +85,49 @@ def find_window_centroids(image, window_width, window_height, margin):
     return window_centroids
 
 
-window_centroids = find_window_centroids(
-    warped, window_width, window_height, margin)
-# window_centroids is list of tuples of lenth 2
+# window_centroids = find_window_centroids(
+#     warped, window_width, window_height, margin)
+# # window_centroids is list of tuples of lenth 2
 
-# If we found any window centers
-if len(window_centroids) > 0:
+# # If we found any window centers
+# if len(window_centroids) > 0:
 
-    # Points used to draw all the left and right windows
-    l_points = np.zeros_like(warped)
-    r_points = np.zeros_like(warped)
+#     # Points used to draw all the left and right windows
+#     l_points = np.zeros_like(warped)
+#     r_points = np.zeros_like(warped)
 
-    # Go through each level and draw the windows
-    for level in range(0, len(window_centroids)):
+#     # Go through each level and draw the windows
+#     for level in range(0, len(window_centroids)):
 
-        # Window_mask is a function to draw window areas
-        l_mask = window_mask(window_width, window_height,
-                             warped, window_centroids[level][0], level)
-        r_mask = window_mask(window_width, window_height,
-                             warped, window_centroids[level][1], level)
-        # Add graphic points from window mask here to total pixels found
+#         # Window_mask is a function to draw window areas
+#         l_mask = window_mask(window_width, window_height,
+#                              warped, window_centroids[level][0], level)
+#         r_mask = window_mask(window_width, window_height,
+#                              warped, window_centroids[level][1], level)
+#         # Add graphic points from window mask here to total pixels found
 
-        # 解释下面这个, 让所有mask里面的像素为255, 因为是
-        l_points[(l_points == 255) | ((l_mask == 1))] = 255
-        r_points[(r_points == 255) | ((r_mask == 1))] = 255
+#         # 解释下面这个, 让所有mask里面的像素为255, 因为是
+#         l_points[(l_points == 255) | ((l_mask == 1))] = 255
+#         r_points[(r_points == 255) | ((r_mask == 1))] = 255
 
-    # Draw the results
-    # add both left and right window pixels together
-    template = np.array(r_points + l_points, np.uint8)
-    zero_channel = np.zeros_like(template)  # create a zero color channel
-    # make window pixels green
+#     # Draw the results
+#     # add both left and right window pixels together
+#     template = np.array(r_points + l_points, np.uint8)
+#     zero_channel = np.zeros_like(template)  # create a zero color channel
+#     # make window pixels green
 
-    template = np.array(
-        cv2.merge((zero_channel, template, zero_channel)), np.uint8)
-    # making the original road pixels 3 color channels
-    warpage = np.dstack((warped, warped, warped)) * 255
-    # overlay the orignal road image with window results
-    output = cv2.addWeighted(warpage, 1, template, 0.5, 0.0)
+#     template = np.array(
+#         cv2.merge((zero_channel, template, zero_channel)), np.uint8)
+#     # making the original road pixels 3 color channels
+#     warpage = np.dstack((warped, warped, warped)) * 255
+#     # overlay the orignal road image with window results
+#     output = cv2.addWeighted(warpage, 1, template, 0.5, 0.0)
 
-# If no window centers found, just display orginal road image
-else:
-    output = np.array(cv2.merge((warped, warped, warped)), np.uint8)
+# # If no window centers found, just display orginal road image
+# else:
+#     output = np.array(cv2.merge((warped, warped, warped)), np.uint8)
 
-# Display the final results
-plt.imshow(output)
-plt.title('window fitting results')
-plt.savefig('conv.jpg', dpi=300)
+# # Display the final results
+# plt.imshow(output)
+# plt.title('window fitting results')
+# plt.savefig('conv.jpg', dpi=300)
