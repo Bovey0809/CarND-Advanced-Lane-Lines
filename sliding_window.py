@@ -5,14 +5,12 @@ import cv2
 
 
 # Load our image
-binary_warped = mpimg.imread('warped_example.jpg')
-
 
 def find_lane_pixels(binary_warped):
     # Take a histogram of the bottom half of the image
     histogram = np.sum(binary_warped[binary_warped.shape[0]//2:, :], axis=0)
     # Create an output image to draw on and visualize the result
-    out_img = np.dstack((binary_warped, binary_warped, binary_warped))
+    # out_img = np.dstack((binary_warped, binary_warped, binary_warped))
     # Find the peak of the left and right halves of the histogram
     # These will be the starting point for the left and right lines
     midpoint = np.int(histogram.shape[0]//2)
@@ -95,17 +93,20 @@ def find_lane_pixels(binary_warped):
     rightx = nonzerox[right_lane_inds]
     righty = nonzeroy[right_lane_inds]
 
-    return leftx, lefty, rightx, righty, out_img
+    # return leftx, lefty, rightx, righty, out_img
+    left_fit = np.polyfit(lefty, leftx, 2)
+    right_fit = np.polyfit(righty, rightx, 2)
+    return left_fit, right_fit
 
 
 def fit_polynomial(binary_warped):
     # Find our lane pixels first
-    leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped)
+    # leftx, lefty, rightx, righty, out_img = find_lane_pixels(binary_warped)
+    leftx, lefty, rightx, righty = find_lane_pixels(binary_warped)
 
     # TO-DO: Fit a second order polynomial to each using `np.polyfit` #
     left_fit = np.polyfit(lefty, leftx, 2)
     right_fit = np.polyfit(righty, rightx, 2)
-
     # Generate x and y values for plotting
     ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0])
     try:
@@ -119,15 +120,15 @@ def fit_polynomial(binary_warped):
 
     ## Visualization ##
     # Colors in the left and right lane regions
-    out_img[lefty, leftx] = [255, 0, 0]
-    out_img[righty, rightx] = [0, 0, 255]
+    # out_img[lefty, leftx] = [255, 0, 0]
+    # out_img[righty, rightx] = [0, 0, 255]
 
     # Plots the left and right polynomials on the lane lines
     # plt.plot(left_fitx, ploty, color='yellow')
     # plt.plot(right_fitx, ploty, color='yellow')
-
-    return out_img, (left_fitx, ploty), (right_fitx, ploty)
-
+    # plt.show()
+    # return out_img, (left_fitx, ploty), (right_fitx, ploty)
+    return (left_fitx, ploty), (right_fitx, ploty)
 
 # out_img = fit_polynomial(binary_warped)
 # out_img.savefig('outimg1.jpg', bbox_inches='tight', dpi=100)
