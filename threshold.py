@@ -47,32 +47,73 @@ def dir_threshold(img, sobel_kernel=3, thresh=(0, np.pi/2)):
     return binary_output
 
 
-def threshold(image):
+def colorHSV(image, low=[0, 80, 200], high=[40, 255, 255]):
+    '''return a mask.'''
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    yellow_hsv_low = np.array(low)
+    yellow_hsv_high = np.array(high)
+    binary = np.zeros((image.shape[0], image.shape[1]))
+    H = image[:, :, 0]
+    S = image[:, :, 1]
+    V = image[:, :, 2]
+
+    binary[((H > yellow_hsv_low[0]) & (H < yellow_hsv_high[0]))] = 1
+    binary[((S > yellow_hsv_low[1]) & (S < yellow_hsv_high[1]))] = 1
+    binary[((V > yellow_hsv_low[2]) & (V < yellow_hsv_high[2]))] = 1
+
+    binary[((H == 1) & (S == 1) & (V == 1))] = 1
+    return binary
+
+
+def gray_color_threshold(img):
+    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    thresh = (190, 255)
+    binary = np.zeros_like(gray)
+    binary[(gray > thresh[0]) & (gray <= thresh[1])] = 1
+    return binary
+
+
+def red_channel(image):
+    R = image[:, :, 0]
+    G = image[:, :, 1]
+    B = image[:, :, 2]
+    thresh = (200, 255)
+    binary = np.zeros_like(R)
+    binary[(R > thresh[0]) & (R <= thresh[1])] = 1
+    return binary
+
+
+def hls_color(image):
+    hls = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
+    H = hls[:, :, 0]
+    L = hls[:, :, 1]
+    S = hls[:, :, 2]
+    sthresh = (90, 255)
+    hthresh = (15, 100)
+    binary = np.zeros_like(H)
+    binary[((H > hthresh[0]) & (H <= hthresh[1])) & (
+        (S > sthresh[0]) & (S <= sthresh[1]))] = 1
+
+    return binary
+
+
+def combined(image):
+    return (red_channel(image) | hls_color(image) | gray_color_threshold(image))
+
+
+def threshold(image, ksize=3, grad=(30, 150), mag=(50, 200), dir_t=(1.2, 1.9), S_thresh=(125, 255), R_thresh=(175, 250)):
     # Choose a Sobel kernel size
-    ksize = 3  # Choose a larger odd number to smooth gradient measurements
     # Apply each of the thresholding functions
-    gradx = abs_sobel_thresh(image, 'x', ksize, (10, 100))
-    mag_binary = mag_thresh(image, sobel_kernel=ksize, mag_thresh=(50, 200))
-    dir_binary = dir_threshold(image, ksize, (1.2, 1.9))
+    gradx = abs_sobel_thresh(image, 'x', ksize, grad)
+    mag_binary = mag_thresh(image, sobel_kernel=ksize, mag_thresh=mag)
+    dir_binary = dir_threshold(image, ksize, dir_t)
     HLS_image = cv2.cvtColor(image, cv2.COLOR_BGR2HLS)
-    S = HLS_image[:, :, 2]
-
-    # RGB
-    R = image[:, :, 2]
-
     # combined thresholds
     sobel_binary = np.zeros_like(dir_binary)
     sobel_binary[(gradx == 1) & (mag_binary == 1)] = 1
 
-    S_thresh = (125, 255)
-    S_binary = np.zeros_like(dir_binary)
-    S_binary[(S > S_thresh[0]) & (S <= S_thresh[1])] = 1
-
-    R_thresh = (200, 255)
-    R_binary = np.zeros_like(R)
-    R_binary[(R >= R_thresh[0]) | (R <= R_thresh[1])] = 1
-
     combined = np.zeros_like(dir_binary)
-    combined[((S_binary == 1) & (sobel_binary == 1)) | ((S_binary == 1) &
-                                                        (R_binary == 1)) | ((sobel_binary == 1) & (R_binary == 1))] = 1
+    another_combine = (red_channel(image) | hls_color(image)
+                       | gray_color_threshold(image))
+    combined[((gradx == 1) | (another_combine == 1))]
     return combined

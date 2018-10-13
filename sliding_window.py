@@ -7,6 +7,7 @@ import cv2
 # Load our image
 
 def find_lane_pixels(binary_warped):
+    '''binary_warped: this should be the gray scale image.'''
     # Take a histogram of the bottom half of the image
     histogram = np.sum(binary_warped[binary_warped.shape[0]//2:, :], axis=0)
     # Create an output image to draw on and visualize the result
@@ -21,9 +22,9 @@ def find_lane_pixels(binary_warped):
     # Choose the number of sliding windows
     nwindows = 9
     # Set the width of the windows +/- margin
-    margin = 50
+    margin = 100
     # Set minimum number of pixels found to recenter window
-    minpix = 50
+    minpix = 20
 
     # Set height of windows - based on nwindows above and image shape
     window_height = np.int(binary_warped.shape[0]//nwindows)
@@ -94,6 +95,7 @@ def find_lane_pixels(binary_warped):
     righty = nonzeroy[right_lane_inds]
 
     # return leftx, lefty, rightx, righty, out_img
+
     left_fit = np.polyfit(lefty, leftx, 2)
     right_fit = np.polyfit(righty, rightx, 2)
     return left_fit, right_fit
@@ -105,8 +107,11 @@ def fit_polynomial(binary_warped):
     leftx, lefty, rightx, righty = find_lane_pixels(binary_warped)
 
     # TO-DO: Fit a second order polynomial to each using `np.polyfit` #
-    left_fit = np.polyfit(lefty, leftx, 2)
-    right_fit = np.polyfit(righty, rightx, 2)
+    try:
+        left_fit = np.polyfit(lefty, leftx, 2)
+        right_fit = np.polyfit(righty, rightx, 2)
+    except:
+        pass
     # Generate x and y values for plotting
     ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0])
     try:
